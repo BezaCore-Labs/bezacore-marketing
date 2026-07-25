@@ -72,15 +72,19 @@ App Router under `src/app/`; shared UI under `src/components/` (imported via the
 
 ## Multi-remote git
 
-Single `origin` with multi-push URLs configured (set up 2026-05-17):
+Single `origin` with multi-push URLs (set up 2026-05-17; **migrated to the
+`BezaCore-Labs` org per hub ADR 0011** — verified 2026-07-25):
 
 ```
-origin → ssh://git@github.com/thejollydev/bezacore-marketing.git (push)
-       → ssh://git@gitlab.com/thejollydev/bezacore-marketing.git (push)
-       → ssh://git@git.bezaforge.dev:2222/joseph/bezacore-marketing.git (push)
+origin → git@github.com:BezaCore-Labs/bezacore-marketing.git (fetch + push)
+       → git@gitlab.com:bezacore-labs/bezacore-marketing.git (push)
+       → ssh://git@git.bezaforge.dev:2222/bezacore-labs/bezacore-marketing.git (push)
 ```
 
 `git push` lands on all three. Fetch only pulls from the first. Verify with `git remote -v`.
+
+⚠️ `gh pr merge` only updates GitHub — the mirrors drift until you `git push origin main`
+and delete the merged branch from each mirror URL. Do it **per merge**, not batched.
 
 ## Canonical docs (vault)
 
