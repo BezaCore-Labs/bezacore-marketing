@@ -41,6 +41,14 @@ export const metadata: Metadata = {
     description:
       "A DevOps and AI studio that builds and runs cloud-native software — apps, AI and AI agents, and the infrastructure behind them.",
   },
+  // Emits <link rel="alternate" type="application/rss+xml"> so feed readers and
+  // syndication tools (Hashnode auto-import, aggregators) discover /feed.xml
+  // without being told where it is.
+  alternates: {
+    types: {
+      "application/rss+xml": [{ url: "/feed.xml", title: "BezaCore Labs" }],
+    },
+  },
 };
 
 export default function RootLayout({
