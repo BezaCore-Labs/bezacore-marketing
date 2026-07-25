@@ -20,6 +20,17 @@ type PostEntry = {
 export const posts: PostEntry[] = [
   {
     meta: {
+      slug: "blog-with-no-pipeline",
+      title: "I had a blog with no pipeline feeding it",
+      date: "2026-07-25",
+      excerpt:
+        "Building in public is central to how this studio works — and I'd built the publishing surface without anything feeding it. Here's the system that fixed it: capture daily, publish weekly, and make the habit structural instead of willed.",
+      readingTime: "5 min read",
+    },
+    load: () => import("./blog-with-no-pipeline.mdx"),
+  },
+  {
+    meta: {
       slug: "build-and-run-not-just-ship",
       title: "Shipping is the easy part. Running it is the job.",
       date: "2026-07-09",
