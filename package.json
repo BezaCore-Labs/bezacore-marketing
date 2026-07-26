@@ -6,7 +6,8 @@
     "dev": "next dev -p 3030",
     "build": "next build",
     "start": "next start -p 3030",
-    "lint": "eslint"
+    "lint": "eslint",
+    "cover": "python3 scripts/gen-post-cover.py"
   },
   "dependencies": {
     "@mdx-js/loader": "^3.1.1",
