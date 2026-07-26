@@ -1,4 +1,9 @@
 import type { ComponentType } from "react";
+import type { StaticImageData } from "next/image";
+
+import blogWithNoPipelineCover from "./2026/07/blog-with-no-pipeline/cover.png";
+import buildAndRunCover from "./2026/07/build-and-run-not-just-ship/cover.png";
+import fixedPriceCover from "./2026/07/fixed-price-over-hourly/cover.png";
 
 // Blog post registry. Each entry pairs metadata with a static import of its MDX
 // body (compiled to a component by @next/mdx). Kept explicit (no fs globbing) so
@@ -26,6 +31,13 @@ export type PostMeta = {
 
 type PostEntry = {
   meta: PostMeta;
+  /**
+   * The post's 1000x420 cover, statically imported from its own folder so Next
+   * fingerprints and serves it. Used as the per-post OpenGraph/Twitter image —
+   * without it every post would share the site-wide OG card and every shared
+   * link would look identical.
+   */
+  cover: StaticImageData;
   load: () => Promise<{ default: ComponentType }>;
 };
 
@@ -39,6 +51,7 @@ export const posts: PostEntry[] = [
         "Building in public is central to how this studio works — and I'd built the publishing surface without anything feeding it. Here's the system that fixed it: capture daily, publish weekly, and make the habit structural instead of willed.",
       readingTime: "5 min read",
     },
+    cover: blogWithNoPipelineCover,
     load: () => import("./2026/07/blog-with-no-pipeline/index.mdx"),
   },
   {
@@ -50,6 +63,7 @@ export const posts: PostEntry[] = [
         "Most software relationships end at the handoff. Here’s why BezaCore Labs owns the whole lifecycle — build, deploy, and keep it healthy — instead of handing you a repo and walking away.",
       readingTime: "4 min read",
     },
+    cover: buildAndRunCover,
     load: () => import("./2026/07/build-and-run-not-just-ship/index.mdx"),
   },
   {
@@ -61,6 +75,7 @@ export const posts: PostEntry[] = [
         "Hourly billing rewards the slow version of the work and leaves you unable to budget. Here’s how fixed scope keeps both sides honest.",
       readingTime: "3 min read",
     },
+    cover: fixedPriceCover,
     load: () => import("./2026/07/fixed-price-over-hourly/index.mdx"),
   },
 ];

@@ -19,7 +19,36 @@ export async function generateMetadata({
   const { slug } = await params;
   const post = getPost(slug);
   if (!post) return {};
-  return { title: post.meta.title, description: post.meta.excerpt };
+
+  const { meta, cover } = post;
+  const url = `/blog/${meta.slug}`;
+  // Per-post card. `cover.src` is a root-relative fingerprinted path, which
+  // Next resolves to absolute against the root layout's metadataBase — social
+  // scrapers reject relative image URLs.
+  const images = [
+    { url: cover.src, width: cover.width, height: cover.height, alt: meta.title },
+  ];
+
+  return {
+    title: meta.title,
+    description: meta.excerpt,
+    alternates: { canonical: url },
+    openGraph: {
+      type: "article",
+      title: meta.title,
+      description: meta.excerpt,
+      url,
+      publishedTime: meta.date,
+      siteName: "BezaCore Labs",
+      images,
+    },
+    twitter: {
+      card: "summary_large_image",
+      title: meta.title,
+      description: meta.excerpt,
+      images,
+    },
+  };
 }
 
 function formatDate(iso: string): string {
