@@ -58,7 +58,7 @@ export default function About() {
                   deploy and run them on solid infrastructure, and bring AI in where it earns its place —
                   and because I&apos;ve lived on the operational side, I care as much about what happens
                   after launch as before it. Durable systems over flashy launches, and one accountable
-                  owner from the first commit to production.
+                  studio from the first commit to production.
                 </p>
                 <p className="text-paper/90">
                   I try to build the way I&apos;d want someone to build for me: carefully, honestly, and

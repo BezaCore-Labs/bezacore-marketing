@@ -271,7 +271,7 @@ export default function Home() {
             <Reveal delay={120}>
               <div className="bz-metrics">
                 <div className="bz-metric">
-                  <div className="k">Accountable owner</div>
+                  <div className="k">Accountable studio</div>
                   <div className="v" style={{ color: "var(--color-azure)" }}>1</div>
                 </div>
                 <div className="bz-metric">
