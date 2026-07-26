@@ -3,11 +3,12 @@
   "version": "0.1.0",
   "private": true,
   "scripts": {
-    "dev": "next dev -p 3030",
-    "build": "next build",
+    "dev": "node scripts/sync-blog-assets.mjs && next dev -p 3030",
+    "build": "node scripts/sync-blog-assets.mjs && next build",
     "start": "next start -p 3030",
     "lint": "eslint",
-    "cover": "python3 scripts/gen-post-cover.py"
+    "cover": "python3 scripts/gen-post-cover.py",
+    "sync:blog": "node scripts/sync-blog-assets.mjs"
   },
   "dependencies": {
     "@mdx-js/loader": "^3.1.1",
