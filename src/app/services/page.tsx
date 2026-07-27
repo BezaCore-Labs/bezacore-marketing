@@ -42,7 +42,7 @@ const pillars: Pillar[] = [
         <path d="M8 21h8M12 18v3" />
       </svg>
     ),
-    what: "Cloud-native web and mobile apps, APIs, and backends — designed, built, deployed, and handed over. A typical engagement is a fixed-scope build: agree on what it does, the studio builds and ships it, you get the running app plus handover.",
+    what: "Cloud-native web apps, APIs, and backends — designed, built, deployed, and handed over. A typical engagement is a fixed-scope build: agree on what it does, the studio builds and ships it, you get the running app plus handover.",
     who: "For founders and small businesses who need real software built, not just advised on.",
   },
   {

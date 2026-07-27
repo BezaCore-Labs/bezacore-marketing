@@ -19,7 +19,7 @@ export const metadata: Metadata = {
 type Pkg = { name: string; price: string; gets: string; note?: string; featured?: boolean };
 
 const packages: Pkg[] = [
-  { name: "App Build", price: "from $5,000", gets: "A web or mobile app — built, deployed, and hosted, with handover.", note: "scoped per project" },
+  { name: "App Build", price: "from $5,000", gets: "A web app or custom software build — built, deployed, and hosted, with handover.", note: "scoped per project" },
   { name: "AI Agent & Integration Sprint", price: "from $2,500", gets: "A custom agent, assistant, LLM feature, or RAG built into your product." },
   { name: "Deploy-to-Cloud", price: "from $2,000", gets: "Your app live on Google Cloud — the right GCP services for the job (Cloud Run, GKE, Compute Engine, Cloud SQL…) — with monitoring and a runbook." },
   { name: "CI/CD Setup", price: "from $1,500", gets: "Pipelines, containerization, automated deploys, and docs." },
