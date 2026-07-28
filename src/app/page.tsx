@@ -18,7 +18,7 @@ type Pillar = { title: string; body: string; glow: string; icon: ReactNode };
 const pillars: Pillar[] = [
   {
     title: "App & Software Development",
-    body: "Cloud-native web and mobile apps, APIs, and backends — designed, built, deployed, and handed over.",
+    body: "Cloud-native web apps, APIs, and backends — designed, built, deployed, and handed over.",
     glow: "var(--color-azure)",
     icon: (
       <svg viewBox="0 0 24 24" className="h-5 w-5" fill="none" stroke="currentColor" strokeWidth={1.8}>
