@@ -13,7 +13,7 @@ This is the `bezacore.com` parent marketing site. Scaffolded 2026-05-17 per hub 
 
 ## What this repo IS
 
-A Next.js 16 marketing site for `bezacore.com` — the BezaCore Labs LLC parent surface, deployed as a **Next server on Cloud Run** (not static export — the contact/waitlist forms need server API routes; ADR 0007 amended 2026-05-25). **Intelligrace-only public** per Master-Plan Chunk C scope rev (2026-05-16). All four content pages are now built (v1):
+A Next.js 16 marketing site for `bezacore.com` — the BezaCore Labs LLC parent surface, deployed as a **Next server on Cloud Run** (not static export — the contact/waitlist forms need server API routes; ADR 0007 amended 2026-05-25). **The site is a DevOps & AI *studio* surface** (repositioned 2026-06-27, operating-model v3.5; fully redesigned 2026-07-10). Products stay hidden until they ship — `/intelligrace` 301s to `/` and the waitlist is dormant but not deleted. *(The "Intelligrace-only public" scope below is the superseded v1 product-era record, kept for context.)* Pages as of v1:
 
 - Homepage (`/`) — parent-company framing + Intelligrace product card. Signature **fusion-circuit hero** (`HeroCircuitFusion` — circuit traces + traveling-light pulses + gradient headline).
 - `/about` — founder + LLC + middle-path faith posture + structural mission tier commitment.
@@ -57,6 +57,39 @@ pnpm lint
 ```
 
 **Dev port pinned to 3030** (`package.json` scripts) because the local `obsidian-mcp-server` holds port 3000. Do not unpin without coordinating — multiple local services depend on the 3000-collision dodge.
+
+## ⛔ Deploy is part of "done" — merging a PR does NOT change the live site
+
+**`bezacore.com` is a MANUAL Cloud Run deploy.** There is no CI/CD on this repo (automating it is tracked as **#486**). A merged PR changes `main` and nothing else — the site keeps serving the previous revision until someone runs a deploy.
+
+**This has bitten us:** on 2026-07-27 a copy fix removing an unbacked "web and mobile apps" capability claim (#553) was merged and reported as done while **bezacore.com kept serving the claim on three pages.** For any copy, content, or user-visible change, **"done" means deployed and verified in the live served HTML** — not merged, not green build.
+
+```bash
+# 1. Build from merged main (needs docker-buildx on Arch)
+IMG=us-east1-docker.pkg.dev/bezacore-admin/cloud-run-source-deploy/bezacore-marketing:latest
+docker build -t "$IMG" .
+
+# 2. Smoke-test the IMAGE before pushing — prove the change is in the artifact
+docker run -d --name bz-smoke -p 8099:8080 -e PORT=8080 "$IMG"
+curl -s http://127.0.0.1:8099/ | grep -i "<thing you changed>"   # in-container localhost is IPv6; probe 127.0.0.1
+docker rm -f bz-smoke
+
+# 3. Auth is interactive and expires — JOSEPH must run this himself:
+#    ! gcloud auth login
+gcloud auth configure-docker us-east1-docker.pkg.dev --quiet
+docker push "$IMG"
+
+# 4. Deploy BY DIGEST, not by :latest — so the live artifact is provably the tested one
+gcloud run deploy bezacore-marketing --region us-east1 \
+  --image us-east1-docker.pkg.dev/bezacore-admin/cloud-run-source-deploy/bezacore-marketing@sha256:<digest>
+
+# 5. Verify the LIVE site, then close the ticket
+curl -s https://bezacore.com/<page> | grep -i "<thing you changed>"
+```
+
+- Redeploying to the **existing** service preserves env vars and the `allUsers` public binding — no org-policy dance after the first go-live.
+- `gcloud auth login` is interactive: the agent cannot run it. Ask Joseph to run `! gcloud auth login`, then the agent's own shell can build/push/deploy via the shared credential store.
+- Deploy **by digest**. `:latest` is ambiguous about which build actually shipped.
 
 ## Code architecture
 
@@ -107,7 +140,12 @@ For embedding in this repo, copy needed exports to `public/brand/` and reference
 ## Phase status
 
 - **Phase 1 — scaffold + content + build: ✅ COMPLETE.** scaffold ✅ (2026-05-17), content lock ✅ (2026-05-21), **v1 build + merged ✅ (PR #3, 2026-05-25)** — all 4 pages, contact + waitlist forms → Resend API routes, site-wide signature styling. **Living-light experience descoped** (parked in vault). **Chunk-C local pass ✅ (2026-05-31):** real `/terms` + `/privacy`, brand/OG metadata in `public/brand/`, Dockerized for Cloud Run (`output: 'standalone'`, smoke-tested). `pnpm build` green.
-- **Phase 2 — deploy + DNS:** 🔄 next, the go-live push (needs accounts/DNS). Tracked in Plane `MKTG`: Resend account + `bezacore.com` domain verify (MKTG-21, gates the forms) → GCP project + Artifact Registry (MKTG-15) → Cloud Run deploy + Google Cloud DNS (MKTG-17) → end-to-end test (MKTG-18) = Chunk C exit.
+- **Phase 2 — deploy + DNS: ✅ COMPLETE (go-live 2026-06-14).** bezacore.com live on Cloud Run (`bezacore-admin` / us-east1) + Google Cloud DNS; both forms verified e2e. = Chunk C exit criterion met.
+- **Phase 3 — studio repositioning: ✅ LIVE 2026-06-27.** Repointed from the Intelligrace product site to a **DevOps & AI studio** (operating-model v3.5): `/services` + `/work`, products hidden (`/intelligrace` → `/` 301, waitlist dormant).
+- **Phase 4 — v3 redesign: ✅ LIVE 2026-07-10.** Ground-up rebuild + dedicated `/pricing` and `/blog` (MDX-in-repo).
+- **Phase 5 — build-in-public pipeline: 🔄 PRODUCING (since 2026-07-25).** Weekly post → syndicated to dev.to · Medium · Hashnode · LinkedIn personal · X · Bluesky, each carrying `rel=canonical` back to `bezacore.com/blog`. Current revision **`00013-6nr`**.
+
+> ⚠️ **Work tracking is OpenProject (`pm.bezaforge.dev`, project `bezacore-marketing`), NOT Plane.** Plane was retired 2026-07-14 — any `MKTG-nn` ID in this file or the vault docs is a dead Plane-era reference and no longer resolves.
 
 ## Working style
 
