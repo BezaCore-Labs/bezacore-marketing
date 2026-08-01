@@ -156,6 +156,19 @@ for (const post of posts) {
       continue;
     }
 
+    // "scheduled:" means written and queued but not posted to this channel YET —
+    // publishing is deliberately staggered (one post per account per 24h), so a gap
+    // between the blog going live and a channel receiving it is normal, not a fault.
+    // Alarming during that window would be a false red, and false reds get the whole
+    // check muted. Present-early is fine and simply reports as live.
+    if (expectation.startsWith("scheduled")) {
+      const found = findPost(body, post);
+      row.cells[key] = found
+        ? { mark: "o", state: "present" }
+        : { mark: ">", state: "scheduled" };
+      continue;
+    }
+
     const found = findPost(body, post);
     const shouldBePresent = expectation === "present";
 
@@ -217,7 +230,8 @@ for (const { post, cells } of rows) {
   console.log(`  ${pad(post.slug, slugWidth)}  ${line}`);
 }
 console.log(`\n  o live (canonical matched)   ~ live (title only)   . absent on purpose`);
-console.log(`  X MISSING — expected live    + unexpected          ! could not verify\n`);
+console.log(`  X MISSING — expected live    + unexpected          ! could not verify`);
+console.log(`  > queued, not posted yet (staggered publishing)\n`);
 
 for (const key of Object.keys(manifest.untracked ?? {})) {
   console.log(`  not checkable: ${key} — ${manifest.untracked[key]}`);
