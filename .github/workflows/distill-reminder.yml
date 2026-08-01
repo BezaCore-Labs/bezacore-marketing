@@ -1,0 +1,67 @@
+# Sunday reminder to run the weekly build-in-public distill.
+#
+# WHY THIS EXISTS: the distill is the studio's whole content pipeline and it has no
+# trigger. It runs when someone remembers, and in July it was missed two weeks running.
+# The build-log kept filling; nothing published. Nothing was ever asked to notice.
+#
+# WHY IT ISN'T AN OPENPROJECT RECURRING TASK: OpenProject 17.6 has recurring MEETINGS but
+# not recurring work packages (upstream epic #29120 is still open, and the WP schema on
+# our instance carries no recurrence field). Separately, pm.bezaforge.dev resolves to
+# 10.10.20.20, so a GitHub runner cannot reach it to create one. A reminder that fires in
+# the wrong tool beats one that does not fire. May move to a BezaForge cron later.
+#
+# WHY IT ASSIGNS RATHER THAN JUST OPENING: an issue only emails people watching the repo,
+# and watch state is not something this workflow can verify. Assignment always notifies.
+name: distill reminder
+
+on:
+  schedule:
+    # Sundays 12:00 UTC — the write slot (syndicate Monday).
+    - cron: "0 12 * * 0"
+  workflow_dispatch:
+
+permissions:
+  contents: read
+  issues: write
+
+jobs:
+  remind:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v7
+
+      - name: Open (or escalate) the weekly distill reminder
+        env:
+          GH_TOKEN: ${{ github.token }}
+          ASSIGNEE: thejollydev
+        run: |
+          set -euo pipefail
+          week=$(date -u +%Y-%m-%d)
+
+          # If last week's is still open, the ritual was MISSED — say so on the existing
+          # issue rather than stacking a second one. Silent duplicates read as clutter;
+          # an escalating thread reads as a problem.
+          existing=$(gh issue list --label distill --state open \
+            --json number --jq '.[0].number // empty')
+
+          if [ -n "$existing" ]; then
+            gh issue comment "$existing" --body \
+              "@${ASSIGNEE} — another distill slot has arrived (${week}) and this one is still open. That means a week's seeds went unpublished. Worth either running it or closing it with a reason."
+            exit 0
+          fi
+
+          # Body lives in its own file, not inline. Embedding markdown in a YAML block
+          # scalar means every prose line must stay indented, and a single column-0 line
+          # (a fenced code block, say) silently terminates the scalar and breaks the
+          # workflow. --body-file sidesteps that and makes the text editable on its own.
+          {
+            echo "@${ASSIGNEE} — the weekly distill slot has arrived."
+            echo
+            cat .github/distill-reminder-body.md
+          } > /tmp/distill-body.md
+
+          gh issue create \
+            --title "Weekly build-in-public distill — week of ${week}" \
+            --label distill \
+            --assignee "${ASSIGNEE}" \
+            --body-file /tmp/distill-body.md
