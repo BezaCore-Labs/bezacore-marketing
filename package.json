@@ -8,7 +8,8 @@
     "start": "next start -p 3030",
     "lint": "eslint",
     "cover": "python3 scripts/gen-post-cover.py",
-    "sync:blog": "node scripts/sync-blog-assets.mjs"
+    "sync:blog": "node scripts/sync-blog-assets.mjs",
+    "check:channels": "node scripts/check-channels.mjs"
   },
   "dependencies": {
     "@mdx-js/loader": "^3.1.1",
