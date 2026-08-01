@@ -105,14 +105,17 @@ export function clientIp(req: Request): string | null {
   return null;
 }
 
-function hit(bucket: Bucket, max: number, now: number): boolean {
+// Roll an elapsed window over before it is read or written. Kept separate from
+// the allowance check so a bucket can be inspected without being charged.
+function roll(bucket: Bucket, now: number): void {
   if (now >= bucket.resetAt) {
     bucket.count = 0;
     bucket.resetAt = now + WINDOW_MS;
   }
-  if (bucket.count >= max) return false;
-  bucket.count++;
-  return true;
+}
+
+function hasRoom(bucket: Bucket, max: number): boolean {
+  return bucket.count < max;
 }
 
 // Drop buckets whose window has already elapsed. Called on each check, which
@@ -138,21 +141,31 @@ export type RateLimitResult =
 export function consumeSendBudget(req: Request): RateLimitResult {
   const now = Date.now();
 
-  // Global ceiling first — it is the guarantee, and it applies even when the
-  // caller's IP is unknown.
-  if (!hit(globalBucket, GLOBAL_MAX, now)) {
+  // TWO-PHASE ON PURPOSE: check every applicable limit first, and only charge
+  // them once ALL of them pass. Charging the global counter before the per-IP
+  // check would let one blocked abuser drain the global allowance while being
+  // refused — the exact lockout the per-IP layer exists to prevent. A rejected
+  // request must cost nothing.
+  roll(globalBucket, now);
+  if (!hasRoom(globalBucket, GLOBAL_MAX)) {
     return { allowed: false, retryAfterSeconds: retryAfter(globalBucket, now) };
   }
 
   const ip = clientIp(req);
-  if (!ip) return { allowed: true };
+
+  // Unknown IP: the global ceiling is the only applicable limit, so a stripped
+  // or unparseable header buys nothing.
+  if (!ip) {
+    globalBucket.count++;
+    return { allowed: true };
+  }
 
   sweep(now);
 
   let bucket = ipBuckets.get(ip);
   if (!bucket) {
-    // At capacity with every bucket still live: refuse rather than grow. The
-    // global ceiling above has already been charged, so this is not a bypass.
+    // At capacity with every bucket still live: refuse rather than grow, and
+    // charge nothing.
     if (ipBuckets.size >= MAX_TRACKED_IPS) {
       return { allowed: false, retryAfterSeconds: WINDOW_MS / 1000 };
     }
@@ -160,9 +173,14 @@ export function consumeSendBudget(req: Request): RateLimitResult {
     ipBuckets.set(ip, bucket);
   }
 
-  if (!hit(bucket, PER_IP_MAX, now)) {
+  roll(bucket, now);
+  if (!hasRoom(bucket, PER_IP_MAX)) {
     return { allowed: false, retryAfterSeconds: retryAfter(bucket, now) };
   }
+
+  // Both limits have room — commit to both together.
+  globalBucket.count++;
+  bucket.count++;
   return { allowed: true };
 }
 
