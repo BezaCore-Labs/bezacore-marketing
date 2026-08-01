@@ -23,14 +23,35 @@
 // an accepted trade — Upstash/Firestore would put an external dependency in
 // the request path of the page whose entire job is letting clients reach us,
 // and Cloud Armor would require fronting the service with an external HTTPS
-// load balancer it does not currently have. Keep the Cloud Run service's
-// --max-instances capped so the multiplier stays small and known.
+// load balancer this service does not have.
+//
+// ⚠️ BE HONEST ABOUT WHAT THIS DOES NOT DO. The service runs maxScale=20 at
+// concurrency 80, so an attacker who sustains ~1,600 concurrent requests can
+// force scale-out and multiply the global ceiling by up to 20. In-memory
+// limiting fundamentally cannot bound sends ACROSS instances — only shared
+// state or an edge policy can. What this does guarantee:
+//
+//   * a single-source flood is stopped dead (the overwhelmingly likely case)
+//   * per-instance damage is bounded and predictable
+//   * worst-case total is bounded and known, rather than unlimited
+//
+// GLOBAL_MAX is therefore set well below what the site's real traffic needs,
+// so that even the 20x amplified worst case stays survivable. Lowering the
+// service's --max-instances instead would be the wrong trade: it would
+// throttle the whole site during a legitimate traffic spike, which is exactly
+// what the build-in-public strategy exists to cause. If sustained distributed
+// abuse ever actually happens, the answer is Cloud Armor, not a smaller
+// number here.
 
 type Bucket = { count: number; resetAt: number };
 
 const WINDOW_MS = 10 * 60 * 1000; // 10 minutes
 const PER_IP_MAX = 5;
-const GLOBAL_MAX = 30;
+
+// 12 per 10 min from the ENTIRE internet. The site takes a handful of contact
+// submissions a week, so this is heavy headroom for real traffic while
+// capping the amplified worst case at 12 x 20 = 240 per window instead of 600.
+const GLOBAL_MAX = 12;
 
 // Hard cap on tracked IPs. Without this, a flood of unique addresses would
 // itself become the attack: unbounded Map growth until the instance OOMs.
