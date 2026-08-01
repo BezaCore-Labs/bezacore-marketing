@@ -1,4 +1,5 @@
 import { sendEmail, isValidEmail, escapeHtml } from "@/lib/email";
+import { consumeSendBudget, tooManyRequests } from "@/lib/rate-limit";
 
 // POST /api/waitlist — Intelligrace waitlist signups → Resend. Single-list,
 // announcement-only per the binding privacy promise in the content spec.
@@ -15,6 +16,12 @@ export async function POST(req: Request) {
 
   if (honeypot) return Response.json({ ok: true });
   if (!isValidEmail(email)) return Response.json({ ok: false }, { status: 400 });
+
+  // Same throttle as /api/contact (#525). This route is dormant (the product
+  // surface is hidden) but the endpoint is still live and still calls Resend,
+  // so it needs the guard regardless of whether any UI points at it.
+  const budget = consumeSendBudget(req);
+  if (!budget.allowed) return tooManyRequests(budget.retryAfterSeconds);
 
   const sent = await sendEmail({
     subject: "New Intelligrace waitlist signup",

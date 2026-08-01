@@ -15,7 +15,9 @@ const EMAIL_RE = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
 export function ContactForm() {
   const [fields, setFields] = useState<Fields>({ name: "", email: "", subject: "", message: "" });
   const [errors, setErrors] = useState<Errors>({});
-  const [status, setStatus] = useState<"idle" | "submitting" | "success" | "error">("idle");
+  const [status, setStatus] = useState<
+    "idle" | "submitting" | "success" | "error" | "rate-limited"
+  >("idle");
   const [honeypot, setHoneypot] = useState(""); // bots fill this; humans never see it
 
   const update =
@@ -46,7 +48,11 @@ export function ContactForm() {
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ ...fields, company: honeypot }),
       });
-      setStatus(res.ok ? "success" : "error");
+      // 429 is not a failure — the message simply wasn't sent yet. Saying
+      // "something went wrong" there would be untrue and would push someone
+      // into retrying immediately, which is exactly the wrong advice.
+      if (res.status === 429) setStatus("rate-limited");
+      else setStatus(res.ok ? "success" : "error");
     } catch {
       setStatus("error");
     }
@@ -65,6 +71,13 @@ export function ContactForm() {
       {status === "error" ? (
         <p className="rounded-lg border border-red-400/40 bg-red-400/5 px-4 py-3 text-sm text-red-400" role="alert">
           Something went wrong sending your message. Please try again in a few minutes.
+        </p>
+      ) : null}
+
+      {status === "rate-limited" ? (
+        <p className="rounded-lg border border-amber/40 bg-amber/5 px-4 py-3 text-sm text-amber" role="alert">
+          That&apos;s a few messages in a short window — your message wasn&apos;t sent. Please wait
+          about ten minutes and try again.
         </p>
       ) : null}
 
