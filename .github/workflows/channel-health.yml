@@ -1,0 +1,68 @@
+# Weekly proof that every post we expect to be live on a syndication channel is STILL live.
+#
+# Exists because of the 2026-07-26 Hashnode removal (#568): a post was published, its
+# canonical verified, and then AutoMod deleted it with no notification. Nobody noticed for
+# four days because nothing was ever asked to check again. Publish-time verification is
+# not durable.
+#
+# Scheduled rather than folded into the weekly distill on purpose. The distill is a human
+# ritual and it has slipped; a check that only fires when someone remembers is the same
+# no-trigger-no-owner shape that let the X/Bluesky phase quietly become never.
+#
+# Needs no secrets and no install — every endpoint is public and the checker uses only
+# Node builtins.
+name: channel health
+
+on:
+  schedule:
+    # Mondays 13:00 UTC — syndication day, so a problem surfaces alongside the work.
+    - cron: "0 13 * * 1"
+  workflow_dispatch:
+  # Guard the checker and its expectations against being broken by an unrelated change.
+  pull_request:
+    paths:
+      - "scripts/check-channels.mjs"
+      - "content/syndication.json"
+      - ".github/workflows/channel-health.yml"
+
+permissions:
+  contents: read
+  issues: write
+
+jobs:
+  check:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v7
+
+      - uses: actions/setup-node@v7
+        with:
+          node-version: 24
+
+      - name: Check syndication channels
+        id: check
+        # pipefail is REQUIRED here: without it the pipe returns tee's exit code and this
+        # step passes no matter what the checker reported — a health check that can never
+        # go red. GitHub's default shell does not set it.
+        run: |
+          set -o pipefail
+          node scripts/check-channels.mjs | tee result.txt
+
+      # A failed run emails you, but email gets skimmed — and "nobody noticed for four
+      # days" is the exact thing being fixed. An issue is durable and assignable.
+      # Scheduled runs only: a PR already shows its own red X.
+      - name: Open an issue on failure
+        if: failure() && github.event_name != 'pull_request'
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          # Don't stack a new issue every week while a known problem is still open.
+          existing=$(gh issue list --label channel-health --state open \
+            --json number --jq '.[0].number // empty')
+          body=$'A syndication channel check failed. A post we expect to be live was not found, or a channel could not be verified.\n\n```\n'"$(cat result.txt || echo 'no output captured')"$'\n```\n\nRun: '"${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }}"$'\n\nIf an absence is intentional, record it in `content/syndication.json` with its reason rather than muting this check.'
+          if [ -n "$existing" ]; then
+            gh issue comment "$existing" --body "$body"
+          else
+            gh issue create --title "Channel health check failed" \
+              --label channel-health --body "$body"
+          fi

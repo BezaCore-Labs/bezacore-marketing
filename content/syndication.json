@@ -1,0 +1,80 @@
+{
+  "$comment": [
+    "INTENDED syndication state, post x channel. Read by scripts/check-channels.mjs.",
+    "",
+    "This file exists because parity is NOT the expectation. Backfill was cancelled",
+    "permanently on 2026-07-30 ('after today, only new articles will be posted to any",
+    "account'), so several posts are absent from several channels ON PURPOSE. A checker",
+    "that assumed every post belongs on every channel would raise four standing false",
+    "alarms forever, and a check that always cries wolf is worse than no check at all --",
+    "the next REAL removal would hide in its noise.",
+    "",
+    "So every cell is explicit. 'present' means we expect to find it live; anything else",
+    "is an intentional absence carrying its reason. When a cell is absent, the reason is",
+    "the point: it is what stops a future session from 'fixing' a gap that was a decision.",
+    "",
+    "WHEN YOU PUBLISH A NEW POST: add its slug here with a cell per channel. The checker",
+    "fails on any blog post missing from this file, so it cannot silently rot."
+  ],
+
+  "channels": {
+    "devto": {
+      "label": "dev.to",
+      "endpoint": "https://dev.to/api/organizations/bezacorelabs/articles?per_page=100",
+      "verifiesCanonical": true
+    },
+    "medium": {
+      "label": "Medium",
+      "endpoint": "https://medium.com/feed/bezacore-labs",
+      "note": "Post pages 403 behind Cloudflare for any curl, UA or not. The publication feed is the ONLY reachable check -- served-HTML canonical verification is impossible here."
+    },
+    "hashnode": {
+      "label": "Hashnode",
+      "endpoint": "https://bezacorelabs.hashnode.dev/rss.xml",
+      "note": "RSS only. Post pages are a JS shell where a real post and a nonsense slug return a byte-identical skeleton, so a page fetch cannot distinguish live from deleted."
+    },
+    "bluesky": {
+      "label": "Bluesky",
+      "endpoint": "https://public.api.bsky.app/xrpc/app.bsky.feed.getAuthorFeed?actor=bezacore.com&limit=100",
+      "note": "Matches on the post URL appearing in the skeet text or its embed."
+    }
+  },
+
+  "untracked": {
+    "x": "X/@BezaCoreLabs has no public read API without an authenticated bearer token, so it cannot be checked from a public endpoint like the others. Verify by hand during the distill.",
+    "linkedin": "LinkedIn personal profile cannot be read without login. Verify by hand during the distill."
+  },
+
+  "posts": [
+    {
+      "slug": "blog-with-no-pipeline",
+      "title": "I had a blog with no pipeline feeding it",
+      "channels": {
+        "devto": "present",
+        "medium": "present",
+        "hashnode": "absent: REMOVED BY HASHNODE AUTOMOD. Published + canonical-verified 2026-07-26, flagged and deleted with no notification, found 2026-07-30. No appeal, no re-upload (#562). This cell is the incident that created this checker.",
+        "bluesky": "absent: predates the social posting pattern; backfill cancelled 2026-07-30 (#563)"
+      }
+    },
+    {
+      "slug": "build-and-run-not-just-ship",
+      "title": "Shipping is the easy part. Running it is the job.",
+      "channels": {
+        "devto": "present",
+        "medium": "present",
+        "hashnode": "absent: backfill cancelled 2026-07-30 (#563); Hashnode re-enters with the next technical post (#566)",
+        "bluesky": "absent: predates the social posting pattern; backfill cancelled 2026-07-30 (#563)"
+      }
+    },
+    {
+      "slug": "fixed-price-over-hourly",
+      "title": "Why every engagement is fixed-price",
+      "channels": {
+        "devto": "present",
+        "medium": "absent: backfill cancelled 2026-07-30 (#563)",
+        "hashnode": "absent: backfill cancelled 2026-07-30 (#563); Hashnode re-enters with the next technical post (#566)",
+        "bluesky": "absent: predates the social posting pattern; backfill cancelled 2026-07-30 (#563)"
+      }
+    }
+  ]
+}
