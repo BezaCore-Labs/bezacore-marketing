@@ -1,5 +1,5 @@
 ---
-vault_canonical: 04_Career/BezaCore-Labs/products/bezacore-marketing/
+vault_canonical: 05_Projects/BezaCore-Labs/bezacore-marketing/
 vault_mirrors: []
 ---
 
@@ -9,7 +9,7 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 
 This is the `bezacore.com` parent marketing site. Scaffolded 2026-05-17 per hub ADR 0007 v1.2 as part of BezaCore Labs Master-Plan Chunk C Phase 1.
 
-> **Vault is canonical for all BezaCore Labs documentation.** The product home for this repo lives at `~/Vaults/Master-Mind/04_Career/BezaCore-Labs/products/bezacore-marketing/` (vault moved out of GoogleDrive 2026-06-06 per hub ADR 0002). Strategy, ROADMAP, content spec, and design decisions live there. This repo holds code + CLAUDE.md + README.md.
+> **Vault is canonical for all BezaCore Labs documentation.** The product home for this repo lives at `~/Vaults/Master-Mind/05_Projects/BezaCore-Labs/bezacore-marketing/` (vault moved out of GoogleDrive 2026-06-06 per hub ADR 0002). Strategy, ROADMAP, content spec, and design decisions live there. This repo holds code + CLAUDE.md + README.md.
 
 ## What this repo IS
 
@@ -125,8 +125,8 @@ Open in this order when working on this repo:
 
 1. Vault `CLAUDE.md` + `AI-MASTER.md` (per global startup sequence)
 2. Hub `~/Projects/bezacore-labs/CLAUDE.md` — cross-repo coordination context
-3. **Product home:** `04_Career/BezaCore-Labs/products/bezacore-marketing/README.md`
-4. **Content spec (locked copy for all 4 pages):** `04_Career/BezaCore-Labs/products/bezacore-marketing/content/v1-locked.md`
+3. **Product home:** `05_Projects/BezaCore-Labs/bezacore-marketing/README.md`
+4. **Content spec (locked copy for all 4 pages):** `05_Projects/BezaCore-Labs/bezacore-marketing/content/v1-locked.md`
 5. **Master-Plan Chunk C:** vault `04_Career/BezaCore-Labs/Master-Plan.md` § Chunk C
 6. **Marketing-stack ADR:** hub `docs/decisions/0007-marketing-stack-nextjs-static-export.md` (v1.2 — bumped 2026-05-17 for Next 15→16, TS 5→6)
 7. **Email ADR:** hub `docs/decisions/0008-transactional-email-resend.md`
